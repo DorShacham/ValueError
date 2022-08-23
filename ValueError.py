@@ -15,6 +15,7 @@ class Valerr:
         self.val = value
         self.err = err
         self.is_array = False
+        self.iter_index = 0
         if type(value) == Valerr:
             if err != 0:
                 raise TypeError
@@ -78,6 +79,22 @@ class Valerr:
         err = val * b * a.rel_err()
         return Valerr(val,err)
 
+    def __setitem__(obj,index,value):
+        if (type(value) == int) or (type(value) == float):
+            value = Valerr(value)
+        if (not obj.is_array) or (type(value) != Valerr):
+            raise TypeError
+        obj.val[index] = value.val
+        obj.err[index] = value.err
+        return value
+
+    def __getitem__(obj,index):
+        if (not obj.is_array):
+            raise TypeError
+        return Valerr(obj.val[index],obj.err[index])
+
+
+
     
     def _general_funcion_singel(f,*f_arg):
         arg = []
@@ -103,11 +120,10 @@ class Valerr:
             tmp = Valerr._general_funcion_singel(f,*args)
             l_val.append(tmp.val)
             l_err.append(tmp.err)
-        return Valerr(l_val,l_err)
+        return Valerr(np.array(l_val),np.array(l_err))
     
 
     def general_funcion(f,*f_arg):
-        print(type(f_arg[0]))
         if f_arg[0].is_array:
             return Valerr._general_function_array(f,*f_arg)
         else: 
@@ -117,24 +133,7 @@ class Valerr:
         return str(self.val) + "+-" + str(self.err)
 
 
-Va = np.array([0.2317, 0.2317, 0.2317, 0.2317, 0.2317, 0.2317, 0.2317, 0.2317, 0.2317, 0.1494, 0.1495, 0.1495, 0.1494, 0.1493, 0.1488, 0.1486, 0.1486])*1e4
-Va_err = 0.001 * 1e4
-Va = Valerr(Va,Va_err)
-
-I = -np.array([0, 0.057, 0.085, 0.116, 0.143, 0.166, 0.200, -0.157, -0.313, 0, 0.065, 0.112, 0.162, 0.244, -0.140, -0.251, -0.302])
-I_err = 0.001
-I = Valerr(I,I_err)
-
-A = np.array([0, 0.4, 0.6, 0.8, 1 ,1.2, 1.4, -1, -2, 0, 0.6, 1, 1.4, 2, -1, -2, -2.4] )* 1e-2
-A_err = 0.2 * np.ones(len(A)) * 1e-2
-A = Valerr(A,A_err)
-
-print("I",I)
-print("Va",Va)
-
-f = lambda x,y : x/y**0.5
-xData = Valerr.general_funcion(f,I,Va);
-
-
-print("Xdata.value:",xData.val)
-print("\n\nXdata.error:",xData.err)
+a = Valerr(np.array([1,2,3]),np.array([0.1,0.2,0.3]))
+print(a[2])
+for x in a:
+    print(x)
